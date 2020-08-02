@@ -12,7 +12,7 @@ setup(
     # Provide either the link to your github or to your website
     url='https://github.com/thenerdscribe/collection',
     # I explain this later on
-    download_url='https://github.com/user/reponame/archive/v_01.tar.gz',
+    download_url='https://github.com/thenerdscribe/collection/archive/0.1.tar.gz',
     # Keywords that define your package best
     keywords=['laravel', 'collection', 'pipeline'],
     install_requires=[            # I get to this in a second

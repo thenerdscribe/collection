@@ -1,8 +1,9 @@
 from distutils.core import setup
 setup(
-    name='src',         # How you named your package folder (MyLib)
+    name='collection',         # How you named your package folder (MyLib)
     packages=['collection'],   # Chose the same as "name"
-    version='0.1',      # Start with a small number and increase it with every change you make
+    package_dir={'collection': 'src/collection'},
+    version='0.1.1',      # Start with a small number and increase it with every change you make
     # Chose a license from here: https://help.github.com/articles/licensing-a-repository
     license='MIT',
     # Give a short description about your library
@@ -12,7 +13,7 @@ setup(
     # Provide either the link to your github or to your website
     url='https://github.com/thenerdscribe/collection',
     # I explain this later on
-    download_url='https://github.com/thenerdscribe/collection/archive/0.1.tar.gz',
+    download_url='https://github.com/thenerdscribe/collection/archive/0.1.1.tar.gz',
     # Keywords that define your package best
     keywords=['laravel', 'collection', 'pipeline'],
     install_requires=[            # I get to this in a second

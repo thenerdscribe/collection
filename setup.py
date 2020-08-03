@@ -3,7 +3,7 @@ setup(
     name='collection',         # How you named your package folder (MyLib)
     packages=['collection'],   # Chose the same as "name"
     package_dir={'collection': 'src/collection'},
-    version='0.1.3',      # Start with a small number and increase it with every change you make
+    version='0.1.4',      # Start with a small number and increase it with every change you make
     # Chose a license from here: https://help.github.com/articles/licensing-a-repository
     license='MIT',
     # Give a short description about your library

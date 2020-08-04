@@ -325,7 +325,7 @@ def test_transform():
     assert sut == expected
 
 
-def test_unqieu():
+def test_unique():
     expected = Collection([1, 2, 3])
     sut = Collection([1, 1, 1, 2, 2, 3]).unique()
     assert sut == expected

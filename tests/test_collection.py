@@ -1,6 +1,11 @@
 from src.collection import Collection
 
 
+class DummyClass:
+    def __init__(self, arg):
+        self.arg = arg
+
+
 def test_smoke():
     assert Collection([]).items == []
 
@@ -63,11 +68,6 @@ def test_last_function():
 def test_map():
     expected = Collection([3, 6, 9])
     assert Collection([1, 2, 3]).map(lambda x: x * 3) == expected
-
-
-class DummyClass:
-    def __init__(self, arg):
-        self.arg = arg
 
 
 def test_map_into():
@@ -330,3 +330,137 @@ def test_unique():
     sut = Collection([1, 1, 1, 2, 2, 3]).unique()
     assert sut == expected
 
+
+def test_unless_false():
+    expected = Collection([1, 2, 3])
+    sut = Collection([1, 2]).unless(False, lambda x: x.push(3))
+    assert sut == expected
+
+
+def test_unless_true():
+    expected = Collection([1, 2])
+    sut = Collection([1, 2]).unless(True, lambda x: x.push(3))
+    assert sut == expected
+
+
+def test_unwrap_collection():
+    expected = 1
+    sut = Collection.unwrap(Collection(1))
+    assert sut == expected
+
+
+def test_unwrap_value():
+    expected = 1
+    sut = Collection.unwrap(1)
+    assert sut == expected
+
+
+def test_when_true():
+    expected = Collection([1, 2, 3])
+    sut = Collection([1, 2]).when(True, lambda x: x.push(3))
+    assert sut == expected
+
+
+def test_when_false():
+    expected = Collection([1, 2])
+    sut = Collection([1, 2]).when(False, lambda x: x.push(3))
+    assert sut == expected
+
+
+def test_when_empty():
+    expected = Collection([1])
+    sut = Collection([]).when_empty(lambda x: x.push(1))
+    assert sut == expected
+
+
+def test_when_not_empty():
+    expected = Collection([1, 1])
+    sut = Collection([1]).when_not_empty(lambda x: x.push(1))
+    assert sut == expected
+
+
+def test_where():
+    expected = Collection([{'apple': 0}])
+    sut = Collection([{'apple': 1}, {'apple': 0}]).where('apple', 0)
+    assert sut == expected
+
+
+def test_where_between():
+    expected = Collection([{'apple': 2}, {'apple': 3}])
+    sut = Collection([
+        {'apple': 1},
+        {'apple': 2},
+        {'apple': 3},
+        {'apple': 4}
+    ]).where_between('apple', [2, 3])
+    assert sut == expected
+
+
+def test_where_in():
+    expected = Collection([{'apple': 2}, {'apple': 3}])
+    sut = Collection([
+        {'apple': 1},
+        {'apple': 2},
+        {'apple': 3},
+        {'apple': 4}
+    ]).where_in('apple', [2, 3])
+    assert sut == expected
+
+
+def test_where_instance_of():
+    expected = Collection([DummyClass(1)])
+    sut = Collection([DummyClass(1), Collection([1, 2, 3])]).where_instance_of(DummyClass)
+    assert len(sut) == len(expected)
+    assert isinstance(sut[0], DummyClass)
+
+
+def test_where_not_between():
+    expected = Collection([{'apple': 1}, {'apple': 4}])
+    sut = Collection([
+        {'apple': 1},
+        {'apple': 2},
+        {'apple': 3},
+        {'apple': 4}
+    ]).where_not_between('apple', [2, 3])
+    assert sut == expected
+
+
+def test_where_not_in():
+    expected = Collection([{'apple': 2}, {'apple': 3}])
+    sut = Collection([
+        {'apple': 1},
+        {'apple': 2},
+        {'apple': 3},
+        {'apple': 4}
+    ]).where_not_in('apple', [1, 4])
+    assert sut == expected
+
+
+def test_where_not_null():
+    expected = Collection([1, 2, 3])
+    sut = Collection([None, 1, 2, 3]).where_not_null()
+    assert sut == expected
+
+
+def test_where_null():
+    expected = Collection([None])
+    sut = Collection([None, 1, 2, 3]).where_null()
+    assert sut == expected
+
+
+def test_wrap():
+    expected = Collection([1])
+    sut = Collection.wrap(1)
+    assert sut == expected
+
+
+def test_zip():
+    expected = Collection([(1, 2), (3, 4)])
+    sut = Collection([1, 3]).zip([2, 4])
+    assert sut == expected
+
+
+def test_to_json():
+    expected = '[1, 2, 3]'
+    sut = Collection([1, 2, 3]).to_json()
+    assert sut == expected

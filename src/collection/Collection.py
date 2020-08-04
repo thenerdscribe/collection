@@ -19,6 +19,7 @@ def _collect(method):
 
 class Collection:
     def __init__(self, items) -> None:
+        self.og_item = items
         self.items = [items] if type(items) != list else items
 
     @_collect
@@ -370,7 +371,7 @@ class Collection:
         return cls(new_list)
 
     def to_json(self):
-        return json.encode(self.items)
+        return json.dumps(self.items)
 
     def transform(self, func):
         self.items = list(map(func, self.items))
@@ -380,12 +381,87 @@ class Collection:
     def unique(self):
         return list(set(self.items))
 
+    def unless(self, condition, func):
+        if not condition:
+            return func(self.make(self.items))
+        else:
+            return self
+
+    def unless_empty(self, func):
+        return self.when_not_empty(func)
+
+    def unless_not_empty(self, func):
+        return self.when_empty(func)
+
+    @staticmethod
+    def unwrap(item):
+        try:
+            return item.og_item
+        except AttributeError:
+            return item
+
+    def when(self, condition, func):
+        if condition:
+            return func(self.make(self.items))
+        else:
+            return self
+
+    def when_not_empty(self, func):
+        if len(self.items) != 0:
+            return func(self.make(self.items))
+        else:
+            return self
+
+    def when_empty(self, func):
+        if len(self.items) == 0:
+            return func(self.make(self.items))
+        else:
+            return self
+
+    def where(self, key, value):
+        return self.make(self.items).filter(lambda x: x[key] == value)
+
+    def where_between(self, key, range_list):
+        return self.make(self.items).filter(lambda x: range_list[0] <= x[key] <= range_list[1])
+
+    def where_in(self, key, options):
+        return self.make(self.items).filter(lambda x: x[key] in options)
+
+    def where_instance_of(self, cls):
+        return self.make(self.items).filter(lambda x: isinstance(x, cls))
+
+    def where_not_between(self, key, range_list):
+        return self.make(self.items).filter(lambda x: not range_list[0] <= x[key] <= range_list[1])
+
+    def where_not_in(self, key, options):
+        return self.make(self.items).filter(lambda x: x[key] not in options)
+
+    def where_not_null(self):
+        return self.make(self.items).filter(lambda x: x is not None)
+
+    def where_null(self):
+        return self.make(self.items).filter(lambda x: x is None)
+
+    @classmethod
+    def wrap(cls, item):
+        if isinstance(item, cls):
+            return item
+        else:
+            return cls(item)
+
+    @_collect
+    def zip(self, other):
+        return list(zip(self.items, other))
+
     def to_list(self) -> List:
         return self.items
 
     @classmethod
     def make(cls, items) -> Collection:
-        return cls(items)
+        if isinstance(items, cls):
+            return items
+        else:
+            return cls(items)
 
     def __eq__(self, other):
         return self.items == other.items

@@ -134,3 +134,5 @@ pyenv.cfg
 
 .idea
 .DS_Store
+.project
+pyvenv.cfg

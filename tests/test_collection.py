@@ -71,7 +71,7 @@ class DummyClass:
 
 
 def test_map_into():
-    expected = Collection([DummyClass(1)])
+    expected = DummyClass(1)
     assert type(Collection(1).map_into(DummyClass)[0]) == type(expected)
 
 
@@ -120,4 +120,108 @@ def test_pad():
 def test_pad_left_pad_char():
     expected = Collection(['x', 1, 2, 3])
     sut = Collection([1, 2, 3]).pad(4, left=True, pad_char='x')
+    assert sut == expected
+
+
+def test_partition():
+    expected_odd = Collection([1, 3, 5])
+    expected_even = Collection([2, 4, 6])
+    actual_even, actual_odd = Collection([1, 2, 3, 4, 5, 6]).partition(lambda x: x % 2 == 0)
+    assert expected_even == actual_even
+    assert expected_odd == actual_odd
+
+
+def test_pop():
+    expected_collection = Collection([1, 2])
+    expected_last_item = 3
+    sut = Collection([1, 2, 3])
+    last_item = sut.pop()
+    assert sut == expected_collection
+    assert last_item == expected_last_item
+
+
+def test_prepend():
+    expected = Collection([0, 1, 2])
+    sut = Collection([1, 2]).prepend(0)
+    assert sut == expected
+
+
+def test_append():
+    expected = Collection([1, 2, 3])
+    sut = Collection([1, 2]).push(3)
+    assert sut == expected
+
+
+def test_random():
+    expected_results = [1, 2]
+    sut = Collection([1, 2]).random(1)
+    assert sut in expected_results
+
+
+def test_random_multiple():
+    expected_results = [1, 2, 3]
+    sut = Collection([1, 2, 3]).random(2)
+    assert sut[0] in expected_results
+    assert sut[1] in expected_results
+
+
+def test_reject():
+    expected = Collection([1, 2, 3])
+    sut = Collection([1, 2, 3, 4, 5, 6]).reject(lambda x: x > 3)
+    assert sut == expected
+
+
+def test_reverse():
+    expected = Collection([3, 2, 1])
+    sut = Collection([1, 2, 3]).reverse()
+    assert sut == expected
+
+
+def test_search():
+    expected = 1
+    sut = Collection([1, 2, 3]).search(2)
+    assert sut == expected
+
+
+def test_shift():
+    expected = Collection([2, 3])
+    sut = Collection([1, 2, 3])
+    assert sut.shift() == expected
+    assert sut == expected
+
+
+def test_shuffle():
+    expected_result = Collection([1, 2])
+    other_expected_result = Collection([2, 1])
+    sut = Collection([1, 2]).shuffle()
+    assert sut == expected_result or sut == other_expected_result
+
+
+def test_skip_until():
+    expected = Collection([3, 1])
+    sut = Collection([2, 1, 1, 1, 2, 3, 1]).skip_until(lambda x: x > 2)
+    assert sut == expected
+
+
+def test_skip_while():
+    expected = Collection([3, 5, 1])
+    sut = Collection([2, 1, 1, 1, 2, 3, 3, 5, 1]).skip_while(lambda x: x > 2)
+    assert sut == expected
+
+
+def test_splice():
+    expected = Collection([2, 3])
+    sut = Collection([1, 2, 3, 4]).splice(1, 2)
+    assert sut == expected
+
+
+def test_sort():
+    expected = [1, 2, 3]
+    sut = Collection([1, 3, 2]).sort()
+    assert sut == expected
+
+
+def test_sort():
+    expected = [{'age': 1}, {'age': 2}, {'age': 3}]
+    sut = Collection([{'age': 1}, {'age': 3}, {'age': 2}]).sort(lambda x: x['age'])
     assert sut == expected

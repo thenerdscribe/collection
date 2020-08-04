@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import random
 from functools import reduce, wraps
 from statistics import median, mode
 from collections import Counter
@@ -21,6 +23,9 @@ class Collection:
     @_collect
     def all(self):
         return self.items
+
+    def append(self, item):
+        return self.push(item)
 
     def avg(self, key=None):
         if key:
@@ -91,7 +96,7 @@ class Collection:
                 return item
         return False
 
-    def firstWhere(self, key, value):
+    def first_where(self, key, value):
         return self.make(self.items).first(lambda x: x[key] == value)
 
     @_collect
@@ -153,7 +158,6 @@ class Collection:
     def map(self, function: Callable) -> Collection:
         return list(map(function, self.items))
 
-    @_collect
     def map_into(self, cls):
         return self.make(self.items).map(lambda x: cls(x))
 
@@ -181,8 +185,8 @@ class Collection:
 
     def nth(self, place, offset=0):
         return self.make(self.items) \
-            .skip(offset)\
-            .pipe(lambda x: list(enumerate(x)))\
+            .skip(offset) \
+            .enumerate() \
             .filter(lambda x: x[0] % place == 0) \
             .map(lambda x: x[1])
 
@@ -199,24 +203,92 @@ class Collection:
         else:
             return self.make(self.items)
 
-    @_collect
-    def reduce(self, function: Callable, accumulator: Any) -> Collection:
-        return list(reduce(function, self.items, accumulator))
+    def partition(self, func):
+        collection = self.make(self.items)
+        true_condition = collection.filter(func)
+        false_condition = collection.reject(func)
+        return true_condition, false_condition
+
+    def pop(self):
+        last_item = self.items.pop()
+        return last_item
+
+    def prepend(self, item):
+        self.items.insert(0, item)
+        return self
+
+    def push(self, item):
+        self.items.append(item)
+        return self
 
     @_collect
     def pipe(self, func):
         return func(self.items)
 
     @_collect
-    def pluck(self, attr: str) -> Collection:
+    def pluck(self, attr: str) -> List:
         return list(map(lambda x: x[attr], self.items))
+
+    def random(self, retrieve=1):
+        return random.choices(self.items, k=retrieve) if retrieve != 1 else random.choice(self.items)
+
+    @_collect
+    def reduce(self, function: Callable, accumulator: Any) -> List:
+        return list(reduce(function, self.items, accumulator))
+
+    def reject(self, func):
+        return self.make(self.items).filter(lambda x: not func(x))
+
+    @_collect
+    def reverse(self):
+        return list(reversed(self.items))
+
+    @_collect
+    def enumerate(self):
+        return list(enumerate(self.items))
+
+    def search(self, search):
+        return self.make(self.items) \
+            .enumerate() \
+            .first(lambda x: search == x[1])[0]
+
+    def shift(self):
+        self.items = self.items[1:]
+        return self
+
+    @_collect
+    def shuffle(self):
+        return random.sample(self.items, k=len(self.items))
 
     @_collect
     def skip(self, offset):
         return self.items[offset:]
 
+    def skip_until(self, func):
+        return self.__skip_base(func, 0)
+
+    def skip_while(self, func):
+        return self.__skip_base(func, 1)
+
+    def __skip_base(self, func, places):
+        collection = self.make(self.items)
+        if callable(func):
+            place = collection.enumerate().first(lambda x: func(x[1]))[0]
+        else:
+            place = collection.enumerate().first(lambda x: x[1] == func)[0]
+        return collection.skip(place + places)
+
+    def splice(self, position, size=None):
+        if not size:
+            return self.skip(position)
+        else:
+            return self.make(self.items[position:position+size])
+
     def sum(self, field: str = None) -> Collection:
         return self.pluck_and_func(sum, field)
+
+    def sort(self, func=None):
+        return sorted(self.items, key=func)
 
     def pluck_and_func(self, func, field=None):
         if field:

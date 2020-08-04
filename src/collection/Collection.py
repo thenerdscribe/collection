@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import random
 from functools import reduce, wraps
 from statistics import median, mode
@@ -278,23 +279,106 @@ class Collection:
             place = collection.enumerate().first(lambda x: x[1] == func)[0]
         return collection.skip(place + places)
 
-    def splice(self, position, size=None):
+    def slice(self, position, size=None):
         if not size:
             return self.skip(position)
         else:
-            return self.make(self.items[position:position+size])
+            return self.make(self.items[position:position + size])
 
     def sum(self, field: str = None) -> Collection:
         return self.pluck_and_func(sum, field)
 
+    @_collect
     def sort(self, func=None):
         return sorted(self.items, key=func)
+
+    @_collect
+    def sort_desc(self, func=None):
+        return sorted(self.items, key=func, reverse=True)
+
+    @_collect
+    def sort_by(self, key):
+        return sorted(self.items, key=lambda x: x[key])
+
+    @_collect
+    def sort_by_desc(self, key):
+        return sorted(self.items, key=lambda x: x[key], reverse=True)
+
+    @_collect
+    def splice(self, pos, size=0, *args):
+        to_return = self.items[pos:pos + size]
+        temp_list = []
+        for key, item in enumerate(self.items):
+            if args and pos <= key < (pos + size):
+                self.items[key] = args[0]
+            if not pos <= key < (pos + size):
+                temp_list.append(item)
+        if not args:
+            self.items = temp_list
+        return to_return
+
+    @_collect
+    def split(self, size):
+        lists = []
+        d, r = divmod(len(self.items), size)
+        for i in range(size):
+            si = (d + 1) * (i if i < r else r) + d * (0 if i < r else i - r)
+            lists.append(self.items[si:si + (d + 1 if i < r else d)])
+        return lists
+
+    @_collect
+    def take(self, count):
+        if count > 0:
+            return self.items[:count]
+        else:
+            return self.items[count:]
+
+    @_collect
+    def take_while(self, func):
+        first = self.make(self.items).first(func)
+        return self.items[:first - 1]
+
+    @_collect
+    def take_until(self, func):
+        collection = self.make(self.items)
+        if callable(func):
+            place = collection.enumerate().first(lambda x: func(x[1]))[0]
+        else:
+            place = collection.enumerate().first(lambda x: x[1] == func)[0]
+        return self.items[:place]
+
+    @_collect
+    def take_while(self, func):
+        first = self.make(self.items).first(lambda x: not func(x))
+        return self.items[:first - 1]
+
+    def tap(self, func):
+        func(self.make(self.items))
+        return self
 
     def pluck_and_func(self, func, field=None):
         if field:
             return func(self.make(self.items).pluck(field).to_list())
         else:
             return func(self.items)
+
+    @classmethod
+    def times(cls, times, func):
+        new_list = []
+        for number in range(1, times + 1):
+            new_list.append(func(number))
+        return cls(new_list)
+
+    def to_json(self):
+        return json.encode(self.items)
+
+    def transform(self, func):
+        self.items = list(map(func, self.items))
+        return self
+
+    @_collect
+    def unique(self):
+        return list(set(self.items))
 
     def to_list(self) -> List:
         return self.items

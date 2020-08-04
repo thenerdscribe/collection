@@ -209,9 +209,9 @@ def test_skip_while():
     assert sut == expected
 
 
-def test_splice():
+def test_slice():
     expected = Collection([2, 3])
-    sut = Collection([1, 2, 3, 4]).splice(1, 2)
+    sut = Collection([1, 2, 3, 4]).slice(1, 2)
     assert sut == expected
 
 
@@ -222,6 +222,111 @@ def test_sort():
 
 
 def test_sort():
-    expected = [{'age': 1}, {'age': 2}, {'age': 3}]
+    expected = Collection([{'age': 1}, {'age': 2}, {'age': 3}])
     sut = Collection([{'age': 1}, {'age': 3}, {'age': 2}]).sort(lambda x: x['age'])
     assert sut == expected
+
+
+def test_sort_desc():
+    expected = Collection([3, 2, 1])
+    sut = Collection([1, 2, 3]).sort_desc()
+    assert sut == expected
+
+
+def test_sort_by():
+    expected = Collection([{'age': 1}, {'age': 2}, {'age': 3}])
+    sut = Collection([{'age': 1}, {'age': 3}, {'age': 2}]).sort_by('age')
+    assert sut == expected
+
+
+def test_sort_by_desc():
+    expected = Collection([{'age': 3}, {'age': 2}, {'age': 1}])
+    sut = Collection([{'age': 1}, {'age': 3}, {'age': 2}]).sort_by_desc('age')
+    assert sut == expected
+
+
+def test_splice():
+    expected_output = Collection([3, 4])
+    expected_collection = Collection([1, 2, 5])
+    sut = Collection([1, 2, 3, 4, 5])
+    assert sut.splice(2, 2) == expected_output
+    assert sut == expected_collection
+
+
+def test_splice_replace():
+    expected_output = Collection([3, 4])
+    expected_collection = Collection([1, 2, 0, 0, 5])
+    sut = Collection([1, 2, 3, 4, 5])
+    assert sut.splice(2, 2, 0) == expected_output
+    assert sut == expected_collection
+
+
+def test_split():
+    expected = Collection([[1, 2], [3, 4], [5]])
+    sut = Collection([1, 2, 3, 4, 5]).split(3)
+    assert sut == expected
+
+
+def test_take():
+    expected = Collection([1, 2])
+    sut = Collection([1, 2, 3]).take(2)
+    assert sut == expected
+
+
+def test_take_negative():
+    expected = Collection([2, 3])
+    sut = Collection([1, 2, 3]).take(-2)
+    assert sut == expected
+
+
+def test_take_while():
+    expected = Collection([1, 2])
+    sut = Collection([1, 2, 3]).take_until(lambda x: x > 2)
+    assert sut == expected
+
+
+def test_take_until_func():
+    expected = Collection([1, 2])
+    sut = Collection([1, 2, 3]).take_until(lambda x: x > 2)
+    assert sut == expected
+
+
+def test_take_until_value():
+    expected = Collection([1, 2])
+    sut = Collection([1, 2, 3]).take_until(3)
+    assert sut == expected
+
+
+def test_take_while():
+    expected = Collection([1, 2])
+    sut = Collection([1, 2, 3]).take_while(lambda x: x < 3)
+    assert sut == expected
+
+
+def test_tap():
+    expected = Collection([1, 2, 3])
+
+    def assert_value(value):
+        assert value == expected
+
+    sut = Collection([1, 2, 3]).tap(assert_value)
+    assert sut == expected
+
+
+def test_times():
+    expected = Collection([3, 6, 9])
+    sut = Collection.times(3, lambda x: x * 3)
+    assert sut == expected
+
+
+def test_transform():
+    expected = Collection([3, 6, 9])
+    sut = Collection([1, 2, 3]).transform(lambda x: x * 3)
+    assert sut == expected
+
+
+def test_unqieu():
+    expected = Collection([1, 2, 3])
+    sut = Collection([1, 1, 1, 2, 2, 3]).unique()
+    assert sut == expected
+

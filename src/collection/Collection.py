@@ -5,7 +5,7 @@ import random
 from functools import reduce, wraps
 from statistics import median, mode
 from collections import Counter
-from typing import List, Any, Iterable, Callable, Union
+from typing import List, Any, Iterable, Callable, Union, Dict
 
 
 def _collect(method):
@@ -20,7 +20,11 @@ def _collect(method):
 class Collection:
     def __init__(self, items) -> None:
         self.og_item = items
-        self.items = [items] if type(items) != list else items
+        item_type = type(items)
+        if item_type == list or item_type == dict:
+            self.items = items
+        else:
+            self.items = [items]
 
     @_collect
     def all(self):
@@ -84,8 +88,17 @@ class Collection:
         return self.make(self.items).map(func).contains(False) == False
 
     @_collect
-    def filter(self, function: Callable) -> Collection:
-        return list(filter(function, self.items))
+    def filter(self, function: Callable) -> List|Dict:
+        try:
+            return {
+                k: v for k, v in list(
+                    filter(
+                        lambda x: function(*x), self.items.items()
+                    )
+                )
+            }
+        except AttributeError:
+            return list(filter(function, self.items))
 
     def first(self, *func):
         if not self.items:
@@ -141,10 +154,6 @@ class Collection:
     def key_by(self, key):
         return self.make(self.items).map(lambda x: {key: x})
 
-    @_collect
-    def keys(self):
-        return list(self.items[0].keys())
-
     def last(self, *func):
         if not self.items:
             return None
@@ -157,8 +166,17 @@ class Collection:
         return False
 
     @_collect
-    def map(self, function: Callable) -> Collection:
-        return list(map(function, self.items))
+    def map(self, function: Callable) -> List | Dict:
+        try:
+            return {
+                k: v for k, v in list(
+                    map(
+                        lambda x: function(*x), self.items.items()
+                    )
+                )
+            }
+        except AttributeError:
+            return list(map(function, self.items))
 
     def map_into(self, cls):
         return self.make(self.items).map(lambda x: cls(x))
@@ -462,6 +480,38 @@ class Collection:
             return items
         else:
             return cls(items)
+
+    @_collect
+    def keys(self):
+        return list(self.items.keys())
+
+    def diff_assoc(self, other):
+        return self.make(self.items) \
+            .filter(lambda x, y: (x, y) not in other.items())
+
+    def diff_keys(self, other):
+        return self.make(self.items) \
+            .filter(lambda x, y: x not in other.keys())
+
+    @_collect
+    def except_for(self, except_keys):
+        return {
+            k: v for k, v in self.items.items() if k not in except_keys
+        }
+
+    @_collect
+    def flip(self):
+        return {v: k for k, v in self.items.items()}
+
+    def forget(self, key):
+        self.items = {k: v for k, v in self.items.items() if k is not key}
+        return self
+
+    def get(self, key):
+        return self.items[key]
+
+    def has(self, key):
+        return key in self.items.keys()
 
     def __eq__(self, other):
         return self.items == other.items

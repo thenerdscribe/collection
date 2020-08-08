@@ -513,6 +513,23 @@ class Collection:
     def has(self, key):
         return key in self.items.keys()
 
+    @_collect
+    def map_to_groups(self, func):
+        grouped = {}
+        for item in self.items:
+            key, value = func(item).items()[0]
+            if key not in grouped.keys():
+                grouped[key] = []
+            grouped[key].append(value)
+        return grouped
+
+    def items(self):
+        return self.items.items()
+
+    @_collect
+    def intersect_by_keys(self, other):
+        return {k: v for k, v in self.items.items() if k in other.keys()}
+
     def __eq__(self, other):
         return self.items == other.items
 

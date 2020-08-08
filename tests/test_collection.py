@@ -1,4 +1,4 @@
-from src.collection import Collection
+from context import Collection
 
 
 class DummyClass:
@@ -100,7 +100,8 @@ class TestCollection:
     def test_partition(self):
         expected_odd = Collection([1, 3, 5])
         expected_even = Collection([2, 4, 6])
-        actual_even, actual_odd = Collection([1, 2, 3, 4, 5, 6]).partition(lambda x: x % 2 == 0)
+        actual_even, actual_odd = Collection(
+            [1, 2, 3, 4, 5, 6]).partition(lambda x: x % 2 == 0)
         assert expected_even == actual_even
         assert expected_odd == actual_odd
 
@@ -167,7 +168,8 @@ class TestCollection:
 
     def test_skip_while(self):
         expected = Collection([3, 5, 1])
-        sut = Collection([2, 1, 1, 1, 2, 3, 3, 5, 1]).skip_while(lambda x: x > 2)
+        sut = Collection([2, 1, 1, 1, 2, 3, 3, 5, 1]
+                         ).skip_while(lambda x: x > 2)
         assert sut == expected
 
     def test_slice(self):
@@ -182,7 +184,8 @@ class TestCollection:
 
     def test_sort(self):
         expected = Collection([{'age': 1}, {'age': 2}, {'age': 3}])
-        sut = Collection([{'age': 1}, {'age': 3}, {'age': 2}]).sort(lambda x: x['age'])
+        sut = Collection([{'age': 1}, {'age': 3}, {'age': 2}]
+                         ).sort(lambda x: x['age'])
         assert sut == expected
 
     def test_sort_desc(self):
@@ -197,7 +200,8 @@ class TestCollection:
 
     def test_sort_by_desc(self):
         expected = Collection([{'age': 3}, {'age': 2}, {'age': 1}])
-        sut = Collection([{'age': 1}, {'age': 3}, {'age': 2}]).sort_by_desc('age')
+        sut = Collection([{'age': 1}, {'age': 3}, {'age': 2}]
+                         ).sort_by_desc('age')
         assert sut == expected
 
     def test_splice(self):
@@ -340,7 +344,8 @@ class TestCollection:
 
     def test_where_instance_of(self):
         expected = Collection([DummyClass(1)])
-        sut = Collection([DummyClass(1), Collection([1, 2, 3])]).where_instance_of(DummyClass)
+        sut = Collection([DummyClass(1), Collection([1, 2, 3])]
+                         ).where_instance_of(DummyClass)
         assert len(sut) == len(expected)
         assert isinstance(sut[0], DummyClass)
 
@@ -442,4 +447,17 @@ class TestCollection:
     def test_has(self):
         expected = True
         sut = Collection({'a': 1}).has('a')
+        assert sut == expected
+
+    def test_intersect_by_keys(self):
+        expected = Collection({'a': 1})
+        sut = Collection({'a': 1, 'b': 2}).intersect_by_keys({'a': 2, 'c': 3})
+        assert sut == expected
+
+    def test_map_to_groups(self):
+        expected = Collection({'a': [1, 2], 'b': [3]})
+        sut = Collection([{'name': 'a', 'value': 1},
+                          {'name': 'a', 'value': 2},
+                          {'name': 'b', 'value': 3}]) \
+            .map_to_groups(lambda x: {x['name']: x['value']})
         assert sut == expected

@@ -22,70 +22,70 @@ class Collection:
         self.og_item = items
         item_type = type(items)
         if item_type == list or item_type == dict:
-            self.items = items
+            self.contents = items
         else:
-            self.items = [items]
+            self.contents = [items]
 
     @_collect
     def all(self):
-        return self.items
+        return self.contents
 
     def append(self, item):
         return self.push(item)
 
     def avg(self, key=None):
         if key:
-            return self.make(self.items).pluck(key).sum() / len(self.items)
-        return self.make(self.items).sum() / len(self.items)
+            return self.make(self.contents).pluck(key).sum() / len(self.contents)
+        return self.make(self.contents).sum() / len(self.contents)
 
     @_collect
     def chunk(self, n):
         new_array = []
-        for i in range(0, len(self.items), n):
-            new_array.append(self.items[i:i + n])
+        for i in range(0, len(self.contents), n):
+            new_array.append(self.contents[i:i + n])
         return new_array
 
     @_collect
     def combine(self, other):
-        return self.make(self.items) + self.make(other)
+        return self.make(self.contents) + self.make(other)
 
     def contains(self, item):
         if callable(item):
-            return self.make(self.items).first(item) in self.items
-        return item in self.items
+            return self.make(self.contents).first(item) in self.contents
+        return item in self.contents
 
     def count(self) -> Collection:
-        return len(self.items)
+        return len(self.contents)
 
     def count_by(self, *func):
         if func:
-            items = self.make(self.items).map(func[0])
+            items = self.make(self.contents).map(func[0])
         else:
-            items = self.items
+            items = self.contents
         return Counter(items)
 
     def dd(self):
-        exit(self.make(self.items))
+        exit(self.make(self.contents))
 
     def diff(self, lst):
-        return self.make(self.items).filter(lambda x: x not in lst)
+        return self.make(self.contents).filter(lambda x: x not in lst)
 
     @_collect
     def duplicates(self):
-        return self.make(list(Counter(self.items).items())
+        return self.make(list(Counter(self.contents).items())
                          ).filter(lambda x: x[1] > 1) \
             .map(lambda x: x[0])
 
     @_collect
     def each(self, function: Callable) -> Collection:
-        for item in self.items:
+        for item in self.contents:
             function(item)
-        return self.items
+        return self.contents
 
     def every(self, func):
-        if not self.items:
+        if not self.contents:
             return True
-        return self.make(self.items).map(func).contains(False) == False
+        return self.make(self.contents).map(func).contains(False) == False
 
     @_collect
     def filter(self, function: Callable) -> List|Dict:
@@ -93,26 +93,26 @@ class Collection:
             return {
                 k: v for k, v in list(
                     filter(
-                        lambda x: function(*x), self.items.items()
+                        lambda x: function(*x), self.contents.items()
                     )
                 )
             }
         except AttributeError:
-            return list(filter(function, self.items))
+            return list(filter(function, self.contents))
 
     def first(self, *func):
-        if not self.items:
+        if not self.contents:
             return None
         elif not func:
-            return self.items[0]
+            return self.contents[0]
 
-        for item in self.items:
+        for item in self.contents:
             if func[0](item):
                 return item
         return False
 
     def first_where(self, key, value):
-        return self.make(self.items).first(lambda x: x[key] == value)
+        return self.make(self.contents).first(lambda x: x[key] == value)
 
     @_collect
     def flatten(self, depth=None) -> Collection:
@@ -130,37 +130,37 @@ class Collection:
                     else:
                         new_items.append(i)
 
-        self.make(self.items).each(lambda x: append_item(x, depth))
+        self.make(self.contents).each(lambda x: append_item(x, depth))
         return new_items
 
     def flat_map(self, func):
         return self.flatten().map(func)
 
     def for_page(self, page, size):
-        return self.make(self.items).chunk(size)[page - 1]
+        return self.make(self.contents).chunk(size)[page - 1]
 
     def implode(self, glue):
-        return glue.join(self.items)
+        return glue.join(self.contents)
 
     def intersect(self, other):
-        return self.make(self.items).filter(lambda x: x in other)
+        return self.make(self.contents).filter(lambda x: x in other)
 
     def is_empty(self):
-        return len(self.items) == 0
+        return len(self.contents) == 0
 
     def is_not_empty(self):
-        return len(self.items) > 0
+        return len(self.contents) > 0
 
     def key_by(self, key):
-        return self.make(self.items).map(lambda x: {key: x})
+        return self.make(self.contents).map(lambda x: {key: x})
 
     def last(self, *func):
-        if not self.items:
+        if not self.contents:
             return None
         elif not func:
-            return self.items[-1]
+            return self.contents[-1]
 
-        for item in reversed(self.items):
+        for item in reversed(self.contents):
             if func[0](item):
                 return item
         return False
@@ -171,18 +171,18 @@ class Collection:
             return {
                 k: v for k, v in list(
                     map(
-                        lambda x: function(*x), self.items.items()
+                        lambda x: function(*x), self.contents.items()
                     )
                 )
             }
         except AttributeError:
-            return list(map(function, self.items))
+            return list(map(function, self.contents))
 
     def map_into(self, cls):
-        return self.make(self.items).map(lambda x: cls(x))
+        return self.make(self.contents).map(lambda x: cls(x))
 
     def map_spread(self, func):
-        return self.make(self.items).map(lambda args: func(*args)).flatten()
+        return self.make(self.contents).map(lambda args: func(*args)).flatten()
 
     def max(self, field=None):
         return self.pluck_and_func(max, field)
@@ -198,13 +198,13 @@ class Collection:
         try:
             return self + other
         except AttributeError:
-            return self.items + other
+            return self.contents + other
 
     def min(self, field=None):
         return self.pluck_and_func(min, field)
 
     def nth(self, place, offset=0):
-        return self.make(self.items) \
+        return self.make(self.contents) \
             .skip(offset) \
             .enumerate() \
             .filter(lambda x: x[0] % place == 0) \
@@ -212,77 +212,77 @@ class Collection:
 
     def pad(self, size, left=False, pad_char=0):
         padded = []
-        for char in range(size - self.make(self.items).count()):
+        for char in range(size - self.make(self.contents).count()):
             if left:
                 padded.append(pad_char)
             else:
-                self.items.append(pad_char)
+                self.contents.append(pad_char)
         if left:
-            padded.append(self.items)
+            padded.append(self.contents)
             return self.make(padded).flatten()
         else:
-            return self.make(self.items)
+            return self.make(self.contents)
 
     def partition(self, func):
-        collection = self.make(self.items)
+        collection = self.make(self.contents)
         true_condition = collection.filter(func)
         false_condition = collection.reject(func)
         return true_condition, false_condition
 
     def pop(self):
-        last_item = self.items.pop()
+        last_item = self.contents.pop()
         return last_item
 
     def prepend(self, item):
-        self.items.insert(0, item)
+        self.contents.insert(0, item)
         return self
 
     def push(self, item):
-        self.items.append(item)
+        self.contents.append(item)
         return self
 
     @_collect
     def pipe(self, func):
-        return func(self.items)
+        return func(self.contents)
 
     @_collect
     def pluck(self, attr: str) -> List:
-        return list(map(lambda x: x[attr], self.items))
+        return list(map(lambda x: x[attr], self.contents))
 
     def random(self, retrieve=1):
-        return random.choices(self.items, k=retrieve) if retrieve != 1 else random.choice(self.items)
+        return random.choices(self.contents, k=retrieve) if retrieve != 1 else random.choice(self.contents)
 
     @_collect
     def reduce(self, function: Callable, accumulator: Any) -> List:
-        return list(reduce(function, self.items, accumulator))
+        return list(reduce(function, self.contents, accumulator))
 
     def reject(self, func):
-        return self.make(self.items).filter(lambda x: not func(x))
+        return self.make(self.contents).filter(lambda x: not func(x))
 
     @_collect
     def reverse(self):
-        return list(reversed(self.items))
+        return list(reversed(self.contents))
 
     @_collect
     def enumerate(self):
-        return list(enumerate(self.items))
+        return list(enumerate(self.contents))
 
     def search(self, search):
-        return self.make(self.items) \
+        return self.make(self.contents) \
             .enumerate() \
             .first(lambda x: search == x[1])[0]
 
     def shift(self):
-        self.items = self.items[1:]
+        self.contents = self.contents[1:]
         return self
 
     @_collect
     def shuffle(self):
-        return random.sample(self.items, k=len(self.items))
+        return random.sample(self.contents, k=len(self.contents))
 
     @_collect
     def skip(self, offset):
-        return self.items[offset:]
+        return self.contents[offset:]
 
     def skip_until(self, func):
         return self.__skip_base(func, 0)
@@ -291,7 +291,7 @@ class Collection:
         return self.__skip_base(func, 1)
 
     def __skip_base(self, func, places):
-        collection = self.make(self.items)
+        collection = self.make(self.contents)
         if callable(func):
             place = collection.enumerate().first(lambda x: func(x[1]))[0]
         else:
@@ -302,84 +302,84 @@ class Collection:
         if not size:
             return self.skip(position)
         else:
-            return self.make(self.items[position:position + size])
+            return self.make(self.contents[position:position + size])
 
     def sum(self, field: str = None) -> Collection:
         return self.pluck_and_func(sum, field)
 
     @_collect
     def sort(self, func=None):
-        return sorted(self.items, key=func)
+        return sorted(self.contents, key=func)
 
     @_collect
     def sort_desc(self, func=None):
-        return sorted(self.items, key=func, reverse=True)
+        return sorted(self.contents, key=func, reverse=True)
 
     @_collect
     def sort_by(self, key):
-        return sorted(self.items, key=lambda x: x[key])
+        return sorted(self.contents, key=lambda x: x[key])
 
     @_collect
     def sort_by_desc(self, key):
-        return sorted(self.items, key=lambda x: x[key], reverse=True)
+        return sorted(self.contents, key=lambda x: x[key], reverse=True)
 
     @_collect
     def splice(self, pos, size=0, *args):
-        to_return = self.items[pos:pos + size]
+        to_return = self.contents[pos:pos + size]
         temp_list = []
-        for key, item in enumerate(self.items):
+        for key, item in enumerate(self.contents):
             if args and pos <= key < (pos + size):
-                self.items[key] = args[0]
+                self.contents[key] = args[0]
             if not pos <= key < (pos + size):
                 temp_list.append(item)
         if not args:
-            self.items = temp_list
+            self.contents = temp_list
         return to_return
 
     @_collect
     def split(self, size):
         lists = []
-        d, r = divmod(len(self.items), size)
+        d, r = divmod(len(self.contents), size)
         for i in range(size):
             si = (d + 1) * (i if i < r else r) + d * (0 if i < r else i - r)
-            lists.append(self.items[si:si + (d + 1 if i < r else d)])
+            lists.append(self.contents[si:si + (d + 1 if i < r else d)])
         return lists
 
     @_collect
     def take(self, count):
         if count > 0:
-            return self.items[:count]
+            return self.contents[:count]
         else:
-            return self.items[count:]
+            return self.contents[count:]
 
     @_collect
     def take_while(self, func):
-        first = self.make(self.items).first(func)
-        return self.items[:first - 1]
+        first = self.make(self.contents).first(func)
+        return self.contents[:first - 1]
 
     @_collect
     def take_until(self, func):
-        collection = self.make(self.items)
+        collection = self.make(self.contents)
         if callable(func):
             place = collection.enumerate().first(lambda x: func(x[1]))[0]
         else:
             place = collection.enumerate().first(lambda x: x[1] == func)[0]
-        return self.items[:place]
+        return self.contents[:place]
 
     @_collect
     def take_while(self, func):
-        first = self.make(self.items).first(lambda x: not func(x))
-        return self.items[:first - 1]
+        first = self.make(self.contents).first(lambda x: not func(x))
+        return self.contents[:first - 1]
 
     def tap(self, func):
-        func(self.make(self.items))
+        func(self.make(self.contents))
         return self
 
     def pluck_and_func(self, func, field=None):
         if field:
-            return func(self.make(self.items).pluck(field).to_list())
+            return func(self.make(self.contents).pluck(field).to_list())
         else:
-            return func(self.items)
+            return func(self.contents)
 
     @classmethod
     def times(cls, times, func):
@@ -389,19 +389,19 @@ class Collection:
         return cls(new_list)
 
     def to_json(self):
-        return json.dumps(self.items)
+        return json.dumps(self.contents)
 
     def transform(self, func):
-        self.items = list(map(func, self.items))
+        self.contents = list(map(func, self.contents))
         return self
 
     @_collect
     def unique(self):
-        return list(set(self.items))
+        return list(set(self.contents))
 
     def unless(self, condition, func):
         if not condition:
-            return func(self.make(self.items))
+            return func(self.make(self.contents))
         else:
             return self
 
@@ -420,45 +420,45 @@ class Collection:
 
     def when(self, condition, func):
         if condition:
-            return func(self.make(self.items))
+            return func(self.make(self.contents))
         else:
             return self
 
     def when_not_empty(self, func):
-        if len(self.items) != 0:
-            return func(self.make(self.items))
+        if len(self.contents) != 0:
+            return func(self.make(self.contents))
         else:
             return self
 
     def when_empty(self, func):
-        if len(self.items) == 0:
-            return func(self.make(self.items))
+        if len(self.contents) == 0:
+            return func(self.make(self.contents))
         else:
             return self
 
     def where(self, key, value):
-        return self.make(self.items).filter(lambda x: x[key] == value)
+        return self.make(self.contents).filter(lambda x: x[key] == value)
 
     def where_between(self, key, range_list):
-        return self.make(self.items).filter(lambda x: range_list[0] <= x[key] <= range_list[1])
+        return self.make(self.contents).filter(lambda x: range_list[0] <= x[key] <= range_list[1])
 
     def where_in(self, key, options):
-        return self.make(self.items).filter(lambda x: x[key] in options)
+        return self.make(self.contents).filter(lambda x: x[key] in options)
 
     def where_instance_of(self, cls):
-        return self.make(self.items).filter(lambda x: isinstance(x, cls))
+        return self.make(self.contents).filter(lambda x: isinstance(x, cls))
 
     def where_not_between(self, key, range_list):
-        return self.make(self.items).filter(lambda x: not range_list[0] <= x[key] <= range_list[1])
+        return self.make(self.contents).filter(lambda x: not range_list[0] <= x[key] <= range_list[1])
 
     def where_not_in(self, key, options):
-        return self.make(self.items).filter(lambda x: x[key] not in options)
+        return self.make(self.contents).filter(lambda x: x[key] not in options)
 
     def where_not_null(self):
-        return self.make(self.items).filter(lambda x: x is not None)
+        return self.make(self.contents).filter(lambda x: x is not None)
 
     def where_null(self):
-        return self.make(self.items).filter(lambda x: x is None)
+        return self.make(self.contents).filter(lambda x: x is None)
 
     @classmethod
     def wrap(cls, item):
@@ -469,10 +469,10 @@ class Collection:
 
     @_collect
     def zip(self, other):
-        return list(zip(self.items, other))
+        return list(zip(self.contents, other))
 
     def to_list(self) -> List:
-        return self.items
+        return self.contents
 
     @classmethod
     def make(cls, items) -> Collection:
@@ -483,55 +483,55 @@ class Collection:
 
     @_collect
     def keys(self):
-        return list(self.items.keys())
+        return list(self.contents.keys())
 
     def diff_assoc(self, other):
-        return self.make(self.items) \
+        return self.make(self.contents) \
             .filter(lambda x, y: (x, y) not in other.items())
 
     def diff_keys(self, other):
-        return self.make(self.items) \
+        return self.make(self.contents) \
             .filter(lambda x, y: x not in other.keys())
 
     @_collect
     def except_for(self, except_keys):
         return {
-            k: v for k, v in self.items.items() if k not in except_keys
+            k: v for k, v in self.contents.items() if k not in except_keys
         }
 
     @_collect
     def flip(self):
-        return {v: k for k, v in self.items.items()}
+        return {v: k for k, v in self.contents.items()}
 
     def forget(self, key):
-        self.items = {k: v for k, v in self.items.items() if k is not key}
+        self.contents = {k: v for k, v in self.contents.items() if k is not key}
         return self
 
     def get(self, key):
-        return self.items[key]
+        return self.contents[key]
 
     def has(self, key):
-        return key in self.items.keys()
+        return key in self.contents.keys()
 
     @_collect
     def map_to_groups(self, func):
         grouped = {}
-        for item in self.items:
-            key, value = func(item).items()[0]
+        for item in self.contents:
+            key, value = list(func(item).items())[0]
             if key not in grouped.keys():
                 grouped[key] = []
             grouped[key].append(value)
         return grouped
 
     def items(self):
-        return self.items.items()
+        return self.contents.items()
 
     @_collect
     def intersect_by_keys(self, other):
-        return {k: v for k, v in self.items.items() if k in other.keys()}
+        return {k: v for k, v in self.contents.items() if k in other.keys()}
 
     def __eq__(self, other):
-        return self.items == other.items
+        return self.contents == other.contents
 
     def __str__(self) -> str:
         return f'{self.__class__.__name__}({self.to_list()})'
@@ -543,13 +543,13 @@ class Collection:
         return self.count()
 
     def __getitem__(self, key) -> Any:
-        return self.items[key]
+        return self.contents[key]
 
     def __setitem__(self, key, value) -> None:
-        self.items[key] = value
+        self.contents[key] = value
 
     def __iter__(self) -> Iterable:
-        return self.items.__iter__()
+        return self.contents.__iter__()
 
     def __add__(self, other):
-        return self.items + other.items
+        return self.contents + other.contents

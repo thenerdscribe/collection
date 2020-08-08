@@ -1,0 +1,8 @@
+{
+  "src/collection/*.py": {
+    "type": "source",
+    "alternate": "tests/test_collection.py"
+  },
+  "tests/test_*.py": { "type": "test", "alternate": "src/collection/{}.py" },
+  "README.md": { "type": "doc" }
+}

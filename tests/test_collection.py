@@ -233,7 +233,7 @@ class TestCollection:
         sut = Collection([1, 2, 3]).take(-2)
         assert sut == expected
 
-    def test_take_while(self):
+    def test_take_until(self):
         expected = Collection([1, 2])
         sut = Collection([1, 2, 3]).take_until(lambda x: x > 2)
         assert sut == expected
@@ -461,3 +461,84 @@ class TestCollection:
                           {'name': 'b', 'value': 3}]) \
             .map_to_groups(lambda x: {x['name']: x['value']})
         assert sut == expected
+
+    def test_map_with_keys(self):
+        expected = Collection({'a': 1, 'b': 2})
+        sut = Collection([{'name': 'a', 'value': 1},
+                          {'name': 'b', 'value': 2}])\
+            .map_with_keys(lambda x: {x['name']: x['value']})
+        assert sut == expected
+
+    def test_only(self):
+        expected = Collection({'a': 1})
+        sut = Collection({'a': 1, 'b': 2}).only(['a'])
+        assert sut == expected
+
+    def test_pull(self):
+        expected_return = 1
+        expected_collection = Collection({'b': 2})
+        sut = Collection({'a': 1, 'b': 2})
+        value = sut.pull('a')
+        assert sut == expected_collection
+        assert expected_return == value
+
+    def test_put(self):
+        expected = Collection({'a': 1, 'b': 2})
+        sut = Collection({'a': 1}).put('b', 2)
+        assert sut == expected
+
+    def test_replace(self):
+        expected = Collection(['a', 'c'])
+        sut = Collection(['a', 'b']).replace({1: 'c'})
+        assert sut == expected
+
+    def test_replace_recursive(self):
+        expected = Collection(['a', 'c', ['b']])
+        sut = Collection(['a', 'd', ['e']])\
+            .replace_recursive({1: 'c', 2: {0: 'b'}})
+        assert sut == expected
+
+    def test_sort_by_keys(self):
+        expected = Collection({'a': 2, 'b': 1})
+        sut = Collection({'b': 1, 'a': 2}).sort_by_keys()
+        assert sut == expected
+
+    def test_sort_by_keys_desc(self):
+        expected = Collection({'b': 1, 'a': 2})
+        sut = Collection({'a': 2, 'b': 1}).sort_by_keys_desc()
+        assert sut == expected
+
+    def test_values(self):
+        expected = Collection([1, 2, 3])
+        sut = Collection({'a': 1, 'b': 2, 'c': 3}).values()
+        assert sut == expected
+
+    def test_group_by(self):
+        expected = Collection({'a': [{'name': 'a', 'age': 10}]})
+        sut = Collection([{'name': 'a', 'age': 10}]).group_by('name')
+        assert sut == expected
+
+    def test_cross_join(self):
+        expected = Collection([[1, 'a'], [1, 'b'], [2, 'a'], [2, 'b']])
+        sut = Collection([1, 2]).cross_join(['a', 'b'])
+        assert sut == expected
+
+    def test_each_spread(self):
+        expected = [3, 7]
+        test_list = []
+        Collection([[1, 2], [3, 4]]).each_spread(
+            lambda x, y: test_list.append(x + y))
+        assert test_list == expected
+
+    def test_each_spread_break(self):
+        expected = [3]
+        test_list = []
+
+        def sometimes_return_false(x, y):
+            if x == 3:
+                return False
+            else:
+                test_list.append(x + y)
+
+        Collection([[1, 2], [3, 4]]).each_spread(sometimes_return_false)
+        assert test_list == expected

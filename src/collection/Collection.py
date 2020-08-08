@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import random
 from functools import reduce, wraps
+from itertools import product
 from statistics import median, mode
 from collections import Counter
 from typing import List, Any, Iterable, Callable, Union, Dict
@@ -88,7 +89,7 @@ class Collection:
         return self.make(self.contents).map(func).contains(False) == False
 
     @_collect
-    def filter(self, function: Callable) -> List|Dict:
+    def filter(self, function: Callable) -> List | Dict:
         try:
             return {
                 k: v for k, v in list(
@@ -212,7 +213,7 @@ class Collection:
 
     def pad(self, size, left=False, pad_char=0):
         padded = []
-        for char in range(size - self.make(self.contents).count()):
+        for _ in range(size - self.make(self.contents).count()):
             if left:
                 padded.append(pad_char)
             else:
@@ -351,11 +352,6 @@ class Collection:
             return self.contents[:count]
         else:
             return self.contents[count:]
-
-    @_collect
-    def take_while(self, func):
-        first = self.make(self.contents).first(func)
-        return self.contents[:first - 1]
 
     @_collect
     def take_until(self, func):
@@ -504,7 +500,8 @@ class Collection:
         return {v: k for k, v in self.contents.items()}
 
     def forget(self, key):
-        self.contents = {k: v for k, v in self.contents.items() if k is not key}
+        self.contents = {k: v for k,
+                         v in self.contents.items() if k is not key}
         return self
 
     def get(self, key):
@@ -523,8 +520,80 @@ class Collection:
             grouped[key].append(value)
         return grouped
 
+    @_collect
+    def map_with_keys(self, func):
+        temp = {}
+        for item in self.contents:
+            k, v = list(func(item).items())[0]
+            temp[k] = v
+        return temp
+
+    @_collect
+    def only(self, keys):
+        return {k: v for k, v in self.contents.items() if k in keys}
+
+    def pull(self, key):
+        to_return = self.contents[key]
+        del self.contents[key]
+        return to_return
+
+    def put(self, key, value):
+        self.contents[key] = value
+        return self
+
+    @_collect
+    def replace(self, to_replace):
+        return self.__replace_base(self.contents, to_replace)
+
+    @_collect
+    def replace_recursive(self, to_replace):
+        return self.__replace_base(self.contents, to_replace, recursive=True)
+
+    def __replace_base(self, original, to_replace, recursive=False):
+        contents = {k: v for k, v in enumerate(original)}
+        for k, v in to_replace.items():
+            if type(v) == dict and recursive == True:
+                contents[k] = self.__replace_base(contents[k], to_replace[k])
+            else:
+                contents[k] = v
+        return list(contents.values())
+
+    @_collect
+    def sort_by_keys(self):
+        return {k: self.contents[k] for k in sorted(self.contents)}
+
+    @_collect
+    def sort_by_keys_desc(self):
+        return {k: self.contents[k] for k in sorted(self.contents, reverse=True)}
+
+    @_collect
     def items(self):
-        return self.contents.items()
+        return list(self.contents.items())
+
+    @_collect
+    def values(self):
+        return list(self.contents.values())
+
+    @_collect
+    def group_by(self, key):
+        grouped = {}
+        for item in self.contents:
+            grouped_by = item[key]
+            if key not in grouped.keys():
+                grouped[grouped_by] = [item]
+            else:
+                grouped[grouped_by].append(item)
+        return grouped
+
+    @_collect
+    def cross_join(self, *others):
+        return [list(x) for x in list(product(self.contents, *others))]
+
+    def each_spread(self, func):
+        for item in self.contents:
+            result = func(*item)
+            if result is False:
+                break
 
     @_collect
     def intersect_by_keys(self, other):

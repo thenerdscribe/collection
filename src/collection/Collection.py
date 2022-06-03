@@ -305,7 +305,7 @@ class Collection:
         else:
             return self.make(self.contents[position:position + size])
 
-    def sum(self, field: str = None) -> Collection:
+    def sum(self, field: str = None) -> int | float:
         return self.pluck_and_func(sum, field)
 
     @_collect

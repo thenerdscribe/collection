@@ -579,7 +579,7 @@ class Collection:
         grouped = {}
         for item in self.contents:
             grouped_by = item[key]
-            if key not in grouped.keys():
+            if grouped_by not in grouped.keys():
                 grouped[grouped_by] = [item]
             else:
                 grouped[grouped_by].append(item)

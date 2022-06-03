@@ -55,7 +55,7 @@ class Collection:
             return self.make(self.contents).first(item) in self.contents
         return item in self.contents
 
-    def count(self) -> Collection:
+    def count(self) -> int:
         return len(self.contents)
 
     def count_by(self, *func):

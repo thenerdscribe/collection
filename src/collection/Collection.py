@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import json
 import random
-from decimal import *
+from decimal import Decimal
+from datetime import datetime
 from functools import reduce, wraps
 from itertools import product
 from statistics import median, mode
@@ -14,6 +15,8 @@ class JsonEncoder(json.JSONEncoder):
     def default(self, o: Any) -> Any:
         if isinstance(o, Decimal):
             return str(o)
+        if isinstance(o, datetime):
+            return o.isoformat()
         
         return json.JSONEncoder.default(self, o)
 

@@ -2,11 +2,20 @@ from __future__ import annotations
 
 import json
 import random
+from decimal import *
 from functools import reduce, wraps
 from itertools import product
 from statistics import median, mode
 from collections import Counter
 from typing import List, Any, Iterable, Callable, Union, Dict
+
+
+class JsonEncoder(json.JSONEncoder):
+    def default(self, o: Any) -> Any:
+        if isinstance(o, Decimal):
+            return str(o)
+        
+        return json.JSONEncoder.default(self, o)
 
 
 def _collect(method):
@@ -385,7 +394,7 @@ class Collection:
         return cls(new_list)
 
     def to_json(self):
-        return json.dumps(self.contents)
+        return json.dumps(self.contents, cls=JsonEncoder)
 
     def transform(self, func):
         self.contents = list(map(func, self.contents))

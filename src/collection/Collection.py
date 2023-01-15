@@ -2,11 +2,23 @@ from __future__ import annotations
 
 import json
 import random
+from decimal import Decimal
+from datetime import datetime
 from functools import reduce, wraps
 from itertools import product
 from statistics import median, mode
 from collections import Counter
 from typing import List, Any, Iterable, Callable, Union, Dict
+
+
+class JsonEncoder(json.JSONEncoder):
+    def default(self, o: Any) -> Any:
+        if isinstance(o, Decimal):
+            return str(o)
+        if isinstance(o, datetime):
+            return o.isoformat()
+        
+        return json.JSONEncoder.default(self, o)
 
 
 def _collect(method):
@@ -55,7 +67,7 @@ class Collection:
             return self.make(self.contents).first(item) in self.contents
         return item in self.contents
 
-    def count(self) -> Collection:
+    def count(self) -> int:
         return len(self.contents)
 
     def count_by(self, *func):
@@ -305,7 +317,7 @@ class Collection:
         else:
             return self.make(self.contents[position:position + size])
 
-    def sum(self, field: str = None) -> Collection:
+    def sum(self, field: str = None) -> int | float:
         return self.pluck_and_func(sum, field)
 
     @_collect
@@ -385,7 +397,7 @@ class Collection:
         return cls(new_list)
 
     def to_json(self):
-        return json.dumps(self.contents)
+        return json.dumps(self.contents, cls=JsonEncoder)
 
     def transform(self, func):
         self.contents = list(map(func, self.contents))
@@ -579,7 +591,7 @@ class Collection:
         grouped = {}
         for item in self.contents:
             grouped_by = item[key]
-            if key not in grouped.keys():
+            if grouped_by not in grouped.keys():
                 grouped[grouped_by] = [item]
             else:
                 grouped[grouped_by].append(item)
